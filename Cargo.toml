@@ -3,8 +3,11 @@ name = "mpv_stream"
 version = "0.1.0"
 
 [dependencies]
-cursive = "*"
 serde_json = "*"
 rusqlite = "*"
 curl = "*"
 mpv = "*"
+
+[dependencies.cursive]
+version = "*"
+features = ["termion-backend"]

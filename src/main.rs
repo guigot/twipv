@@ -1,11 +1,10 @@
+extern crate cursive;
 extern crate mpv;
 extern crate curl;
 extern crate serde_json;
 extern crate rusqlite;
-extern crate cursive;
 
 // use mpv::mpv;
-use std::str::FromStr;
 use std::path::Path;
 use std::string::String;
 use curl::easy::{Handler, Easy2, List, WriteError};
@@ -14,28 +13,11 @@ use std::str;
 use rusqlite::Connection;
 use cursive::Cursive;
 use cursive::align::HAlign;
-use cursive::theme::{Color, PaletteColor, Theme};
+use cursive::theme::{Color, PaletteColor};
 use cursive::event::EventResult;
 use cursive::views::{Dialog,OnEventView,SelectView};
 
-const DB_POSITION: &str = "/home/exosta/programming/testRust/positions.db";
-
-fn moulinette_twitch(result_curl: &String, video_number: i32) {
-
-    let val: Value = serde_json::from_str(result_curl).unwrap();
-    if video_number == -1 {
-        for i in 0..5 {
-            println!("*********************");
-            println!("{}. {}", i, &val["videos"][i]["title"]);
-            println!("{}", &val["videos"][i]["url"]);
-            println!("{}", &val["videos"][i]["game"]);
-        }
-    }
-    else {
-        let i : usize = usize::from_str(&video_number.to_string()).unwrap();
-        launch_video(Path::new(&val["videos"][i]["url"].as_str().unwrap()));
-    }
-}
+const DB_POSITION: &str = "/home/exosta/programming/mpv_stream/positions.db";
 
 struct Collector(Vec<u8>);
 
@@ -46,11 +28,11 @@ impl Handler for Collector {
     }
 }
 
-fn retrieve_videos(video_number: i32) -> String {
+fn retrieve_videos() -> String {
 
     let mut easy = Easy2::new(Collector(Vec::new()));
     easy.get(true).unwrap();
-    easy.url("https://api.twitch.tv/kraken/channels/28575692/videos?limit=5").unwrap();
+    easy.url("https://api.twitch.tv/kraken/channels/28575692/videos?limit=10").unwrap();
 
     let mut list = List::new();
     list.append("Accept: application/vnd.twitchtv.v5+json").unwrap();
@@ -59,7 +41,6 @@ fn retrieve_videos(video_number: i32) -> String {
     easy.http_headers(list).unwrap();
     easy.perform().unwrap();
     let contents = easy.get_ref();
-    //moulinette_twitch(&String::from_utf8_lossy(&contents.0).to_string(), video_number);
     String::from_utf8_lossy(&contents.0).to_string()
 
 }
@@ -143,8 +124,10 @@ fn launch_video(video_path: &Path) {
         }
     } 
     else {
+        /*
         println!("A file is required; {} is not a valid file",
                  video_path.to_str().unwrap());
+                 */
     }
 }
 
@@ -168,15 +151,32 @@ fn callback_video(_siv: &mut Cursive, url: &str) {
 fn main() {
 
 
-    let result : String = retrieve_videos(-1);
+    let result : String = retrieve_videos();
     let val: Value = serde_json::from_str(&result).unwrap();
 
     let mut select_view = SelectView::new()
         .h_align(HAlign::Left);
     select_view.set_on_submit(callback_video);
 
-    for _i in 0..5 {
-        select_view.add_item(val["videos"][_i]["title"].as_str().unwrap().to_string() + "  " + val["videos"][_i]["game"].as_str().unwrap(),
+
+    for _i in 0..10 {
+        let mut plain_title : String = val["videos"][_i]["title"].as_str().unwrap().to_string();
+        let size = 70;
+        if plain_title.chars().count() > size {
+            plain_title = plain_title.chars().take(size-3).collect();
+            plain_title.push_str("...");
+        }
+        else {
+            let fill = " ".repeat(size - plain_title.chars().count());
+            plain_title.push_str(fill.as_str()); 
+        }
+                                                       
+        let mut line_str = plain_title;
+        line_str.push_str("  ");
+        let game = val["videos"][_i]["game"].as_str().unwrap();
+        line_str.push_str(game);
+
+        select_view.add_item(line_str,
                             val["videos"][_i]["url"].as_str().unwrap().to_string());
     }
 
@@ -199,7 +199,7 @@ fn main() {
 
     siv.add_layer(
         Dialog::around(select_view)
-            .title("Derniers streams")
+            .title("Derniers streams MV")
     );
 
     siv.run();
