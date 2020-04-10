@@ -56,8 +56,6 @@ pub fn retrieve_videos(username : &str) -> String {
     easy.http_headers(list).unwrap();
     easy.perform().unwrap();
     let contents = easy.get_ref();
+
     String::from_utf8_lossy(&contents.0).to_string()
-
 }
-
-

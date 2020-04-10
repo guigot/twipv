@@ -10,7 +10,7 @@ use cursive::theme::{Color, PaletteColor};
 use cursive::Cursive;
 use cursive::traits::*;
 use cursive::event::EventResult;
-use cursive::views::{Dialog,OnEventView,SelectView,DummyView,EditView,LinearLayout,TextView};
+use cursive::views::{Dialog,OnEventView,SelectView,DummyView,EditView,LinearLayout};
 
 
 pub fn construct_select_view(last_videos : &str) -> SelectView {
