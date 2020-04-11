@@ -13,7 +13,6 @@ fn main() {
     let mut siv : Cursive = Cursive::default();
 
     ui::construct_ui(&mut siv);
-    siv.add_global_callback('q', |s| s.quit());
 
     siv.run();
 }

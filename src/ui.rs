@@ -9,15 +9,15 @@ use cursive::align::HAlign;
 use cursive::theme::{Color, PaletteColor};
 use cursive::Cursive;
 use cursive::traits::*;
-use cursive::event::EventResult;
-use cursive::views::{Dialog,OnEventView,SelectView,DummyView,EditView,LinearLayout};
+use cursive::event::{Event};
+use cursive::views::{Dialog,OnEventView,SelectView,DummyView,EditView,LinearLayout,NamedView,ViewRef};
 
 
-pub fn construct_select_view(last_videos : &str) -> SelectView {
+pub fn construct_select_view(siv : &mut Cursive, last_videos : &str) {
 
-    let mut select_view = SelectView::new()
-        .h_align(HAlign::Left);
+    let mut select_view : ViewRef<SelectView> = siv.find_name::<SelectView>("select_view").unwrap();
     select_view.set_on_submit(callback_video);
+    select_view.clear();
 
     let val: Value = serde_json::from_str(last_videos).unwrap();
 
@@ -41,31 +41,43 @@ pub fn construct_select_view(last_videos : &str) -> SelectView {
         select_view.add_item(line_str,
                             val["videos"][_i]["url"].as_str().unwrap().to_string());
     }
-
-    select_view
 }
 
-// fn construct_edit_view() -> EditView {
+fn submit_streamer(siv : &mut Cursive, streamer : &str) {
 
+    let last_videos = retrieve_videos(streamer);
+    construct_select_view(siv, &last_videos);
+}
 
-// }
+fn construct_edit_view(siv : &mut Cursive) {
+
+    let mut edit_view = siv.find_name::<EditView>("edit_view").unwrap();
+    edit_view.set_on_submit(submit_streamer);
+
+}
 
 pub fn construct_ui(siv : &mut Cursive) {
 
     let last_videos = retrieve_videos("mistermv");
-    let select_view = construct_select_view(&last_videos);
+    let select_view : NamedView<SelectView> = SelectView::new()
+        .h_align(HAlign::Left)
+        .with_name("select_view");
 
+    // TODO : Mettre espace pour "enter"
     let select_view = OnEventView::new(select_view)
-        .on_pre_event_inner('k', |s, _| {
-            s.select_up(1);
-            Some(EventResult::Consumed(None))
-        }).on_pre_event_inner('j', |s, _| {
-            s.select_down(1);
-            Some(EventResult::Consumed(None))
+        .on_event(Event::Char('k'), move |siv| {
+            siv.call_on_name("select_view", |select_view : &mut SelectView| {
+                select_view.select_up(1);
+            });
+        })
+        .on_event(Event::Char('j'), move |siv| {
+            siv.call_on_name("select_view", |select_view : &mut SelectView| {
+                select_view.select_down(1);
+            });
         });
 
-
-    let edit_view = EditView::new();
+    let edit_view = EditView::new()
+        .with_name("edit_view");
 
     let mut theme = siv.current_theme().clone();
     theme.palette[PaletteColor::Background] = Color::TerminalDefault;
@@ -80,5 +92,10 @@ pub fn construct_ui(siv : &mut Cursive) {
         )
         .title("Derniers streams MV")
     );
+
+    construct_select_view(siv, &last_videos);
+    construct_edit_view(siv);
+
+    siv.add_global_callback('q', |s| s.quit());
 
 }
