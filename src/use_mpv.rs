@@ -1,7 +1,5 @@
-// extern crate mpv; 
 extern crate cursive;
 extern crate libmpv; 
-
 
 use std::path::Path;
 use cursive::Cursive;
