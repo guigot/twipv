@@ -13,6 +13,18 @@ use cursive::event::{Event};
 use cursive::views::{Dialog,OnEventView,SelectView,DummyView,EditView,LinearLayout,NamedView,ViewRef};
 
 
+pub fn construct_view_streamers(siv : &mut Cursive) {
+
+    let mut select_view : ViewRef<SelectView> = siv.find_name::<SelectView>("view_streamers").unwrap();
+    select_view.set_on_submit(submit_streamer);
+
+    select_view.add_item("pandovstrochnis","pandovstrochnis".to_string());
+    select_view.add_item("modiiie","modiiie".to_string());
+    select_view.add_item("mistermv", "mistermv".to_string());
+    select_view.add_item("bazoukha2x", "bazoukha2x".to_string());
+
+}
+
 pub fn construct_select_view(siv : &mut Cursive, last_videos : &str) {
 
     let mut select_view : ViewRef<SelectView> = siv.find_name::<SelectView>("select_view").unwrap();
@@ -21,7 +33,13 @@ pub fn construct_select_view(siv : &mut Cursive, last_videos : &str) {
 
     let val: Value = serde_json::from_str(last_videos).unwrap();
 
-    for _i in 0..10 {
+    let mut max_videos = 10;
+
+    if val["videos"].as_array().unwrap().len() < 10 {
+        max_videos = val["videos"].as_array().unwrap().len();
+    }
+
+    for _i in 0..max_videos {
         let mut plain_title : String = val["videos"][_i]["title"].as_str().unwrap().to_string();
         let size = 70;
         if plain_title.chars().count() > size {
@@ -59,11 +77,16 @@ fn construct_edit_view(siv : &mut Cursive) {
 pub fn construct_ui(siv : &mut Cursive) {
 
     let last_videos = retrieve_videos("mistermv");
+    let view_streamers : NamedView<SelectView> = SelectView::new()
+        .h_align(HAlign::Left)
+        .with_name("view_streamers");
+
     let select_view : NamedView<SelectView> = SelectView::new()
         .h_align(HAlign::Left)
         .with_name("select_view");
 
     // TODO : Mettre espace pour "enter"
+    // TODO : add trait to select_view pour gérer les inputs
     let select_view = OnEventView::new(select_view)
         .on_event(Event::Char('k'), move |siv| {
             siv.call_on_name("select_view", |select_view : &mut SelectView| {
@@ -76,6 +99,17 @@ pub fn construct_ui(siv : &mut Cursive) {
             });
         });
 
+    let view_streamers = OnEventView::new(view_streamers)
+        .on_event(Event::Char('k'), move |siv| {
+            siv.call_on_name("view_streamers", |view_streamers : &mut SelectView| {
+                view_streamers.select_up(1);
+            });
+        })
+        .on_event(Event::Char('j'), move |siv| {
+            siv.call_on_name("view_streamers", |view_streamers : &mut SelectView| {
+                view_streamers.select_down(1);
+            });
+        });
     let edit_view = EditView::new()
         .with_name("edit_view");
 
@@ -83,16 +117,22 @@ pub fn construct_ui(siv : &mut Cursive) {
     theme.palette[PaletteColor::Background] = Color::TerminalDefault;
     siv.set_theme(theme);
 
+    let views_streamers = LinearLayout::vertical()
+        .child(view_streamers)
+        .child(DummyView.fixed_height(1))
+        .child(edit_view);
+
     siv.add_layer(
         Dialog::around(
-            LinearLayout::vertical()
+            LinearLayout::horizontal()
+                .child(views_streamers)
+                .child(DummyView.fixed_width(1))
                 .child(select_view)
-                .child(DummyView.fixed_height(1))
-                .child(edit_view)
         )
         .title("Derniers streams MV")
     );
 
+    construct_view_streamers(siv);
     construct_select_view(siv, &last_videos);
     construct_edit_view(siv);
 
