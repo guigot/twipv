@@ -1,47 +1,55 @@
-extern crate mpv;
+// extern crate mpv; 
 extern crate cursive;
+extern crate libmpv; 
+
 
 use std::path::Path;
 use cursive::Cursive;
 
-pub fn callback_video(_siv: &mut Cursive, url: &str) {
-    launch_video(Path::new(url));
+use use_mpv::libmpv::{events::*, *};
+
+pub fn callback_video(_siv: &mut Cursive, url: &str) -> Result<()> {
+    launch_video(Path::new(url))
 }
 
-fn launch_video(video_path: &Path) {
-    let mut mpv_builder = mpv::MpvHandlerBuilder::new().expect("Failed to init MPV builder");
-    if video_path.is_file() || !video_path.is_file() {
-        let video_path = video_path.to_str().expect("Expected a string for Path, got None");
+fn launch_video(video_path: &Path) -> Result<()> {
 
-        // enable On Screen Controller (disabled with libmpv by default)
-        mpv_builder.set_option("osc",true).unwrap();
-        mpv_builder.set_option("save-position-on-quit",true).unwrap();
-        mpv_builder.set_option("watch-later-directory","/home/exosta/.config/mpv/watch_later").unwrap();
-        mpv_builder.set_option("input-default-bindings",true).unwrap();
-        mpv_builder.set_option("input-vo-keyboard",true).unwrap();
+    let mpv = Mpv::with_initializer(|mpv_initializer| {
+        mpv_initializer.set_property("osc", true)?;
+        mpv_initializer.set_property("save-position-on-quit", true)?;
+        // TODO : chemin relatif
+        mpv_initializer.set_property("watch-later-directory", "/home/exosta/.config/mpv/watch_later")?;
+        mpv_initializer.set_property("input-default-bindings",true)?;
+        mpv_initializer.set_property("input-vo-keyboard",true)?;
+        Ok(())
+    })
+    .unwrap();
 
-        let mut mpv = mpv_builder.build().expect("Failed to build MPV handler");
 
-        mpv.command(&["loadfile", video_path as &str])
-           .expect("Error loading file");
+    let mut ev_ctx = mpv.create_event_context();
+    
+    let video_path = video_path.to_str().expect("Expected a string for Path, got None");
 
-        // loop twice, send parameter as a string
-        mpv.set_property("loop","1").unwrap();
+    crossbeam::scope(|scope| {
+        scope.spawn(|_| {
+            mpv.playlist_load_files(&[(&video_path, FileState::AppendPlay, None)])
+                .unwrap();
 
-        // set speed to 100%, send parameter as a f64
-        mpv.set_property("speed",1.0).unwrap();
+        });
+        scope.spawn(move |_| loop {
+            let ev = ev_ctx.wait_event(0.).unwrap_or(Err(Error::Null));
 
-        'main: loop {
-            while let Some(event) = mpv.wait_event(0.0) {
-                // even if you don't do anything with the events, it is still necessary to empty
-                // the event loop
-                match event {
-                    mpv::Event::Shutdown | mpv::Event::Idle => {
-                        break 'main;
-                    }
-                    _ => {}
-                };
+            match ev {
+                Ok(Event::EndFile(_r)) => {
+                    break;
+                }
+
+                Ok(_e) => continue,
+                Err(_e) => continue,
             }
-        }
-    }
+        });
+    })
+    .unwrap();
+    Ok(())
+
 }

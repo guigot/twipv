@@ -1,5 +1,4 @@
 extern crate cursive;
-extern crate mpv;
 extern crate curl;
 extern crate serde_json;
 

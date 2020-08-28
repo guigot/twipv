@@ -1,11 +1,12 @@
 [package]
 name = "mpv_stream"
-version = "0.3.0"
+version = "0.3.1"
 
 [dependencies]
 serde_json = "*"
 curl = "*"
-mpv = "*"
+libmpv = "2.0.0"
+crossbeam = "0.7.3"
 
 [dependencies.cursive]
 version = "*"
