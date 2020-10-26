@@ -1,10 +1,6 @@
-extern crate cursive;
-extern crate libmpv; 
-
 use std::path::Path;
 use cursive::Cursive;
-
-use use_mpv::libmpv::{events::*, *};
+use libmpv::{events::*, *};
 
 pub fn callback_video(_siv: &mut Cursive, url: &str) -> Result<()> {
     launch_video(Path::new(url))

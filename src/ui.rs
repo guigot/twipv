@@ -1,15 +1,12 @@
-extern crate serde_json;
-extern crate cursive;
 
-
-use use_mpv::callback_video;
-use twitch::retrieve_videos;
-use self::serde_json::{Value};
+use crate::use_mpv::callback_video;
+use crate::twitch::retrieve_videos;
+use serde_json::Value;
 use cursive::align::HAlign;
 use cursive::theme::{BaseColor, Color, Effect, PaletteColor};
 use cursive::Cursive;
 use cursive::traits::*;
-use cursive::event::{Event};
+use cursive::event::Event;
 use cursive::views::{Dialog,OnEventView,SelectView,DummyView,EditView,LinearLayout,NamedView,TextView,ViewRef};
 
 
