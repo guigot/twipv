@@ -1,6 +1,7 @@
 
 use crate::use_mpv::callback_video;
 use crate::twitch::retrieve_videos;
+use crate::config::value_array_field_config;
 use serde_json::Value;
 use cursive::align::HAlign;
 use cursive::theme::{BaseColor, Color, Effect, PaletteColor};
@@ -15,11 +16,12 @@ pub fn construct_view_streamers(siv : &mut Cursive) {
     let mut select_view : ViewRef<SelectView> = siv.find_name::<SelectView>("view_streamers").unwrap();
     select_view.set_on_submit(submit_streamer);
 
-    select_view.add_item("mistermv", "mistermv".to_string());
-    select_view.add_item("pandovstrochnis","pandovstrochnis".to_string());
-    select_view.add_item("modiiie","modiiie".to_string());
-    select_view.add_item("bazoukha2x", "bazoukha2x".to_string());
+    let favorites_streamers = value_array_field_config("favorites");
 
+    for streamer in favorites_streamers {
+        let streamer_ = streamer.as_str().unwrap();
+        select_view.add_item(streamer_, streamer_.to_string())
+    }
 }
 
 pub fn construct_select_view(siv : &mut Cursive, last_videos : &str) {
