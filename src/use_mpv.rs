@@ -11,8 +11,10 @@ fn launch_video(video_path: &Path) -> Result<()> {
     let mpv = Mpv::with_initializer(|mpv_initializer| {
         mpv_initializer.set_property("osc", true)?;
         mpv_initializer.set_property("save-position-on-quit", true)?;
-        // TODO : chemin relatif
-        mpv_initializer.set_property("watch-later-directory", "/home/exosta/.config/mpv/watch_later")?;
+        let mpv_xdgdir = xdg::BaseDirectories::with_prefix("mpv").unwrap();
+        let watchlater_dir = mpv_xdgdir.create_config_directory("watch_later").unwrap();
+        let watchlater_dir = watchlater_dir.to_str().unwrap();
+        mpv_initializer.set_property("watch-later-directory", watchlater_dir)?;
         mpv_initializer.set_property("input-default-bindings",true)?;
         mpv_initializer.set_property("input-vo-keyboard",true)?;
         Ok(())
