@@ -1,17 +1,20 @@
-use crate::use_mpv::callback_video;
-use crate::twitch::retrieve_videos;
 use crate::config::value_array_field_config;
-use serde_json::Value;
+use crate::twitch::retrieve_videos;
+use crate::use_mpv::callback_video;
 use cursive::align::HAlign;
-use cursive::theme::{BaseColor, Color, Effect, PaletteColor};
-use cursive::Cursive;
-use cursive::traits::*;
 use cursive::event::Event;
-use cursive::views::{Dialog,OnEventView,SelectView,DummyView,EditView,LinearLayout,NamedView,TextView,ViewRef};
+use cursive::theme::{BaseColor, Color, Effect, PaletteColor};
+use cursive::traits::*;
+use cursive::views::{
+    Dialog, DummyView, EditView, LinearLayout, NamedView, OnEventView, SelectView, TextView,
+    ViewRef,
+};
+use cursive::Cursive;
+use serde_json::Value;
 
-pub fn construct_view_streamers(siv : &mut Cursive) {
-
-    let mut select_view : ViewRef<SelectView> = siv.find_name::<SelectView>("view_streamers").unwrap();
+pub fn construct_view_streamers(siv: &mut Cursive) {
+    let mut select_view: ViewRef<SelectView> =
+        siv.find_name::<SelectView>("view_streamers").unwrap();
     select_view.set_on_submit(submit_streamer);
 
     let favorites_streamers = value_array_field_config("favorites");
@@ -22,9 +25,8 @@ pub fn construct_view_streamers(siv : &mut Cursive) {
     }
 }
 
-pub fn construct_select_view(siv : &mut Cursive, last_videos : &str) {
-
-    let mut select_view : ViewRef<SelectView> = siv.find_name::<SelectView>("select_view").unwrap();
+pub fn construct_select_view(siv: &mut Cursive, last_videos: &str) {
+    let mut select_view: ViewRef<SelectView> = siv.find_name::<SelectView>("select_view").unwrap();
     select_view.set_on_submit(callback_video);
     select_view.clear();
 
@@ -36,52 +38,49 @@ pub fn construct_select_view(siv : &mut Cursive, last_videos : &str) {
     }
 
     for _i in 0..max_videos {
-        let mut plain_title : String = val["videos"][_i]["title"].as_str().unwrap().to_string();
+        let mut plain_title: String = val["videos"][_i]["title"].as_str().unwrap().to_string();
         let size = 70;
         if plain_title.chars().count() > size {
-            plain_title = plain_title.chars().take(size-3).collect();
+            plain_title = plain_title.chars().take(size - 3).collect();
             plain_title.push_str("...");
-        }
-        else {
+        } else {
             let fill = " ".repeat(size - plain_title.chars().count());
-            plain_title.push_str(fill.as_str()); 
+            plain_title.push_str(fill.as_str());
         }
-                                                       
+
         let mut line_str = plain_title;
         line_str.push_str("  ");
         let game = val["videos"][_i]["game"].as_str().unwrap();
         line_str.push_str(game);
 
-        select_view.add_item(line_str,
-                            val["videos"][_i]["url"].as_str().unwrap().to_string());
+        select_view.add_item(
+            line_str,
+            val["videos"][_i]["url"].as_str().unwrap().to_string(),
+        );
     }
 }
 
-fn submit_streamer(siv : &mut Cursive, streamer : &str) {
-
+fn submit_streamer(siv: &mut Cursive, streamer: &str) {
     let last_videos = retrieve_videos(streamer);
-    let mut text_view : ViewRef<TextView> = siv.find_name::<TextView>("streamer_last").unwrap();
+    let mut text_view: ViewRef<TextView> = siv.find_name::<TextView>("streamer_last").unwrap();
     let title = format!("{}'s last streaming", streamer);
     text_view.set_content(title);
 
     construct_select_view(siv, &last_videos);
 }
 
-fn construct_edit_view(siv : &mut Cursive) {
-
+fn construct_edit_view(siv: &mut Cursive) {
     let mut edit_view = siv.find_name::<EditView>("edit_view").unwrap();
     edit_view.set_on_submit(submit_streamer);
-
 }
 
-pub fn construct_ui(siv : &mut Cursive) {
-
+pub fn construct_ui(siv: &mut Cursive) {
     let last_videos = retrieve_videos("mistermv");
-    let view_streamers : NamedView<SelectView> = SelectView::new()
+    let view_streamers: NamedView<SelectView> = SelectView::new()
         .h_align(HAlign::Left)
         .with_name("view_streamers");
 
-    let select_view : NamedView<SelectView> = SelectView::new()
+    let select_view: NamedView<SelectView> = SelectView::new()
         .h_align(HAlign::Left)
         .with_name("select_view");
 
@@ -89,29 +88,28 @@ pub fn construct_ui(siv : &mut Cursive) {
     // TODO : add trait to select_view pour gérer les inputs
     let select_view = OnEventView::new(select_view)
         .on_event(Event::Char('k'), move |siv| {
-            siv.call_on_name("select_view", |select_view : &mut SelectView| {
+            siv.call_on_name("select_view", |select_view: &mut SelectView| {
                 select_view.select_up(1);
             });
         })
         .on_event(Event::Char('j'), move |siv| {
-            siv.call_on_name("select_view", |select_view : &mut SelectView| {
+            siv.call_on_name("select_view", |select_view: &mut SelectView| {
                 select_view.select_down(1);
             });
         });
 
     let view_streamers = OnEventView::new(view_streamers)
         .on_event(Event::Char('k'), move |siv| {
-            siv.call_on_name("view_streamers", |view_streamers : &mut SelectView| {
+            siv.call_on_name("view_streamers", |view_streamers: &mut SelectView| {
                 view_streamers.select_up(1);
             });
         })
         .on_event(Event::Char('j'), move |siv| {
-            siv.call_on_name("view_streamers", |view_streamers : &mut SelectView| {
+            siv.call_on_name("view_streamers", |view_streamers: &mut SelectView| {
                 view_streamers.select_down(1);
             });
         });
-    let edit_view = EditView::new()
-        .with_name("edit_view");
+    let edit_view = EditView::new().with_name("edit_view");
 
     // Bug with bold :(
     let text_last_streams = TextView::new("mistermv's last streamings")
@@ -145,9 +143,9 @@ pub fn construct_ui(siv : &mut Cursive) {
             LinearLayout::horizontal()
                 .child(views_streamers)
                 .child(DummyView.fixed_width(1))
-                .child(last_streamers)
+                .child(last_streamers),
         )
-        .title("Last streamings")
+        .title("Last streamings"),
     );
 
     construct_view_streamers(siv);
@@ -155,5 +153,4 @@ pub fn construct_ui(siv : &mut Cursive) {
     construct_edit_view(siv);
 
     siv.add_global_callback('q', |s| s.quit());
-
 }
