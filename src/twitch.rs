@@ -59,3 +59,25 @@ pub fn retrieve_videos(username : &str) -> String {
 
     String::from_utf8_lossy(&contents.0).to_string()
 }
+
+pub fn check_live(username : &str) -> String {
+
+    let user_id : u32 = retrieve_id_from_username(username);
+
+    let mut easy = Easy2::new(Collector(Vec::new()));
+    easy.get(true).unwrap();
+    // user_id default mistermv
+    let url = format!("https://api.twitch.tv/kraken/streams/{}",
+                      user_id);
+    easy.url(&url).unwrap();
+
+    let mut list = List::new();
+    list.append("Accept: application/vnd.twitchtv.v5+json").unwrap();
+    list.append("Client-ID: ja58d80v5sp3m5y3p6kw068xuq49pw").unwrap();
+
+    easy.http_headers(list).unwrap();
+    easy.perform().unwrap();
+    let contents = easy.get_ref();
+
+    String::from_utf8_lossy(&contents.0).to_string()
+}

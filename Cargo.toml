@@ -10,7 +10,13 @@ libmpv = "2.0.0"
 toml = "*"
 xdg = "*"
 crossbeam = "0.7.3"
+# twitch_api2 = "0.5.0-alpha.1"
+# oauth2 = "*"
 
 [dependencies.cursive]
 version = "*"
 features = ["termion-backend"]
+
+# [dependencies.twitch_oauth2]
+# version = "0.5.0-alpha.2"
+# features = ["reqwest_client"]

@@ -1,4 +1,3 @@
-
 use crate::use_mpv::callback_video;
 use crate::twitch::retrieve_videos;
 use crate::config::value_array_field_config;
@@ -9,7 +8,6 @@ use cursive::Cursive;
 use cursive::traits::*;
 use cursive::event::Event;
 use cursive::views::{Dialog,OnEventView,SelectView,DummyView,EditView,LinearLayout,NamedView,TextView,ViewRef};
-
 
 pub fn construct_view_streamers(siv : &mut Cursive) {
 
@@ -31,7 +29,6 @@ pub fn construct_select_view(siv : &mut Cursive, last_videos : &str) {
     select_view.clear();
 
     let val: Value = serde_json::from_str(last_videos).unwrap();
-
     let mut max_videos = 10;
 
     if val["videos"].as_array().unwrap().len() < 10 {
