@@ -53,7 +53,7 @@ pub fn retrieve_videos(username: &str) -> String {
     easy.get(true).unwrap();
     // user_id default mistermv
     let url = format!(
-        "https://api.twitch.tv/kraken/channels/{}/videos?limit=10",
+        "https://api.twitch.tv/kraken/channels/{}/videos?limit=10&broadcast_type=archive",
         user_id
     );
     easy.url(&url).unwrap();

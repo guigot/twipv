@@ -31,10 +31,13 @@ fn rofi_lives() {
         let live_streamer = twitch::check_live(streamer.as_str().unwrap());
         let value: Value = serde_json::from_str(&live_streamer).unwrap();
         if value["stream"] != Value::Null {
-            output = output + streamer.as_str().unwrap();
-            output = output + "\t";
-            output = output + value["stream"]["game"].as_str().unwrap();
-            output = output + "\n";
+            let temp_output = format!(
+                "{: <20}{: <45}{: <30}\n",
+                streamer.as_str().unwrap(),
+                value["stream"]["channel"]["status"].as_str().unwrap(),
+                value["stream"]["game"].as_str().unwrap()
+            );
+            output = output + &temp_output;
         }
     }
 
