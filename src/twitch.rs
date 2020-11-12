@@ -1,3 +1,4 @@
+use crate::config::value_string_field_config;
 use curl::easy::{Easy2, Handler, List, WriteError};
 use serde_json::Value;
 
@@ -10,28 +11,33 @@ impl Handler for Collector {
     }
 }
 
-fn retrieve_id_from_username(username: &str) -> u32 {
+fn query_twitchapi(url: &str) -> String {
     let mut easy = Easy2::new(Collector(Vec::new()));
-    easy.get(true).unwrap();
-
     let mut list = List::new();
-    list.append("Accept: application/vnd.twitchtv.v5+json")
-        .unwrap();
-    list.append("Client-ID: ja58d80v5sp3m5y3p6kw068xuq49pw")
-        .unwrap();
-
-    let url = format!(
-        "{}{}",
-        "https://api.twitch.tv/kraken/users?login=", username
+    let client_id = format!(
+        "Client-ID: {}",
+        value_string_field_config("twitch-api-client-id")
     );
 
-    easy.url(&url).unwrap();
-
+    list.append("Accept: application/vnd.twitchtv.v5+json")
+        .unwrap();
+    list.append(&client_id).unwrap();
+    easy.get(true).unwrap();
+    easy.url(url).unwrap();
     easy.http_headers(list).unwrap();
     easy.perform().unwrap();
     let contents = easy.get_ref();
     let result = String::from_utf8_lossy(&contents.0).to_string();
 
+    result
+}
+
+fn retrieve_id_from_username(username: &str) -> u32 {
+    let url = format!(
+        "{}{}",
+        "https://api.twitch.tv/kraken/users?login=", username
+    );
+    let result = query_twitchapi(&url);
     let mut user_id: u32 = 0;
     let val: Value = serde_json::from_str(&result).unwrap();
 
@@ -48,47 +54,19 @@ fn retrieve_id_from_username(username: &str) -> u32 {
 
 pub fn retrieve_videos(username: &str) -> String {
     let user_id: u32 = retrieve_id_from_username(username);
-
-    let mut easy = Easy2::new(Collector(Vec::new()));
-    easy.get(true).unwrap();
-    // user_id default mistermv
     let url = format!(
         "https://api.twitch.tv/kraken/channels/{}/videos?limit=10&broadcast_type=archive",
         user_id
     );
-    easy.url(&url).unwrap();
+    let videos = query_twitchapi(&url);
 
-    let mut list = List::new();
-    list.append("Accept: application/vnd.twitchtv.v5+json")
-        .unwrap();
-    list.append("Client-ID: ja58d80v5sp3m5y3p6kw068xuq49pw")
-        .unwrap();
-
-    easy.http_headers(list).unwrap();
-    easy.perform().unwrap();
-    let contents = easy.get_ref();
-
-    String::from_utf8_lossy(&contents.0).to_string()
+    videos
 }
 
 pub fn check_live(username: &str) -> String {
     let user_id: u32 = retrieve_id_from_username(username);
-
-    let mut easy = Easy2::new(Collector(Vec::new()));
-    easy.get(true).unwrap();
-    // user_id default mistermv
     let url = format!("https://api.twitch.tv/kraken/streams/{}", user_id);
-    easy.url(&url).unwrap();
+    let live = query_twitchapi(&url);
 
-    let mut list = List::new();
-    list.append("Accept: application/vnd.twitchtv.v5+json")
-        .unwrap();
-    list.append("Client-ID: ja58d80v5sp3m5y3p6kw068xuq49pw")
-        .unwrap();
-
-    easy.http_headers(list).unwrap();
-    easy.perform().unwrap();
-    let contents = easy.get_ref();
-
-    String::from_utf8_lossy(&contents.0).to_string()
+    live
 }

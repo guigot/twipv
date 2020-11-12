@@ -32,7 +32,7 @@ fn rofi_lives() {
         let value: Value = serde_json::from_str(&live_streamer).unwrap();
         if value["stream"] != Value::Null {
             let temp_output = format!(
-                "{: <20}{: <45}{: <30}\n",
+                "{: <20}{: <50}{: <25}\n",
                 streamer.as_str().unwrap(),
                 value["stream"]["channel"]["status"].as_str().unwrap(),
                 value["stream"]["game"].as_str().unwrap()
