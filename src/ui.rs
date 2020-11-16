@@ -1,5 +1,5 @@
-use crate::config::value_array_field_config;
-use crate::twitch::retrieve_videos;
+use crate::config::array_field_config;
+use crate::twitch_api::get_vods;
 use crate::use_mpv::callback_video;
 use cursive::align::HAlign;
 use cursive::event::Event;
@@ -17,7 +17,7 @@ pub fn construct_view_streamers(siv: &mut Cursive) {
         siv.find_name::<SelectView>("view_streamers").unwrap();
     select_view.set_on_submit(submit_streamer);
 
-    let favorites_streamers = value_array_field_config("favorites");
+    let favorites_streamers = array_field_config("favorites");
 
     for streamer in favorites_streamers {
         let streamer_ = streamer.as_str().unwrap();
@@ -61,7 +61,7 @@ pub fn construct_select_view(siv: &mut Cursive, last_videos: &str) {
 }
 
 fn submit_streamer(siv: &mut Cursive, streamer: &str) {
-    let last_videos = retrieve_videos(streamer);
+    let last_videos = get_vods(streamer);
     let mut text_view: ViewRef<TextView> = siv.find_name::<TextView>("streamer_last").unwrap();
     let title = format!("{}'s last streaming", streamer);
     text_view.set_content(title);
@@ -75,7 +75,7 @@ fn construct_edit_view(siv: &mut Cursive) {
 }
 
 pub fn construct_ui(siv: &mut Cursive) {
-    let last_videos = retrieve_videos("mistermv");
+    let last_videos = get_vods("mistermv");
     let view_streamers: NamedView<SelectView> = SelectView::new()
         .h_align(HAlign::Left)
         .with_name("view_streamers");

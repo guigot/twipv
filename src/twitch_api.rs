@@ -1,4 +1,4 @@
-use crate::config::value_string_field_config;
+use crate::config::string_field_config;
 use curl::easy::{Easy2, Handler, List, WriteError};
 use serde_json::Value;
 
@@ -11,12 +11,12 @@ impl Handler for Collector {
     }
 }
 
-fn query_twitchapi(url: &str) -> String {
+fn query_twitch_api(url: &str) -> String {
     let mut easy = Easy2::new(Collector(Vec::new()));
     let mut list = List::new();
     let client_id = format!(
         "Client-ID: {}",
-        value_string_field_config("twitch-api-client-id")
+        string_field_config("twitch-api-client-id")
     );
 
     list.append("Accept: application/vnd.twitchtv.v5+json")
@@ -32,12 +32,12 @@ fn query_twitchapi(url: &str) -> String {
     result
 }
 
-fn retrieve_id_from_username(username: &str) -> u32 {
+fn id_from_username(username: &str) -> u32 {
     let url = format!(
         "{}{}",
         "https://api.twitch.tv/kraken/users?login=", username
     );
-    let result = query_twitchapi(&url);
+    let result = query_twitch_api(&url);
     let mut user_id: u32 = 0;
     let val: Value = serde_json::from_str(&result).unwrap();
 
@@ -52,21 +52,21 @@ fn retrieve_id_from_username(username: &str) -> u32 {
     user_id
 }
 
-pub fn retrieve_videos(username: &str) -> String {
-    let user_id: u32 = retrieve_id_from_username(username);
+pub fn get_vods(username: &str) -> String {
+    let user_id: u32 = id_from_username(username);
     let url = format!(
         "https://api.twitch.tv/kraken/channels/{}/videos?limit=10&broadcast_type=archive",
         user_id
     );
-    let videos = query_twitchapi(&url);
+    let videos = query_twitch_api(&url);
 
     videos
 }
 
-pub fn check_live(username: &str) -> String {
-    let user_id: u32 = retrieve_id_from_username(username);
+pub fn check_stream(username: &str) -> String {
+    let user_id: u32 = id_from_username(username);
     let url = format!("https://api.twitch.tv/kraken/streams/{}", user_id);
-    let live = query_twitchapi(&url);
+    let live = query_twitch_api(&url);
 
     live
 }

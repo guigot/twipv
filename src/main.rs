@@ -1,8 +1,7 @@
 mod config;
-mod twitch;
+mod twitch_api;
 mod ui;
 mod use_mpv;
-// mod twitchv2;
 
 use cursive::Cursive;
 use cursive::CursiveExt;
@@ -11,9 +10,9 @@ use std::env;
 
 fn check_lives() {
     let mut number_lives = 0;
-    let favorites_streamers = config::value_array_field_config("favorites");
+    let favorites_streamers = config::array_field_config("favorites");
     for streamer in favorites_streamers {
-        let live_streamer = twitch::check_live(streamer.as_str().unwrap());
+        let live_streamer = twitch_api::check_stream(streamer.as_str().unwrap());
 
         let value: Value = serde_json::from_str(&live_streamer).unwrap();
         if value["stream"] != Value::Null {
@@ -26,9 +25,9 @@ fn check_lives() {
 
 fn rofi_lives() {
     let mut output = String::new();
-    let favorites_streamers = config::value_array_field_config("favorites");
+    let favorites_streamers = config::array_field_config("favorites");
     for streamer in favorites_streamers {
-        let live_streamer = twitch::check_live(streamer.as_str().unwrap());
+        let live_streamer = twitch_api::check_stream(streamer.as_str().unwrap());
         let value: Value = serde_json::from_str(&live_streamer).unwrap();
         if value["stream"] != Value::Null {
             let temp_output = format!(
