@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::vec::Vec;
 use toml::Value;
-use xdg;
 
 fn data_config_file() -> toml::Value {
     let xdg_dirs = xdg::BaseDirectories::with_prefix("mpv_stream").unwrap();
@@ -12,9 +11,8 @@ fn data_config_file() -> toml::Value {
     let mut file = File::open(config_path).unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
-    let value = contents.parse::<Value>().unwrap();
 
-    value
+    contents.parse::<Value>().unwrap()
 }
 
 pub fn array_field_config(field: &str) -> Vec<toml::Value> {

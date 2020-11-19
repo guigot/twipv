@@ -5,17 +5,16 @@ mod use_mpv;
 
 use cursive::Cursive;
 use cursive::CursiveExt;
-use futures::executor;
+use futures::executor::block_on;
 use serde_json::Value;
 use std::env;
-use tokio;
 
 enum Livestream {
     Number,
     Rofi,
 }
 
-async fn check_lives_bis(livestream: Livestream) {
+async fn check_lives(livestream: Livestream) {
     let favorites_streamers = config::array_field_config("favorites");
 
     let streamers: Vec<_> = favorites_streamers
@@ -69,9 +68,9 @@ async fn main() {
     if args.len() > 1 {
         let first_arg = &args[1];
         if first_arg == "number_lives" {
-            executor::block_on(check_lives_bis(Livestream::Number));
+            block_on(check_lives(Livestream::Number));
         } else if first_arg == "rofi" {
-            executor::block_on(check_lives_bis(Livestream::Rofi));
+            block_on(check_lives(Livestream::Rofi));
         }
     } else {
         let mut siv: Cursive = Cursive::default();

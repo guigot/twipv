@@ -24,9 +24,8 @@ fn query_twitch_api(url: &str) -> String {
     easy.http_headers(list).unwrap();
     easy.perform().unwrap();
     let contents = easy.get_ref();
-    let result = String::from_utf8_lossy(&contents.0).to_string();
 
-    result
+    String::from_utf8_lossy(&contents.0).to_string()
 }
 
 fn id_from_username(username: &str) -> u32 {
@@ -55,15 +54,13 @@ pub fn get_vods(username: &str) -> String {
         "https://api.twitch.tv/kraken/channels/{}/videos?limit=10&broadcast_type=archive",
         user_id
     );
-    let videos = query_twitch_api(&url);
 
-    videos
+    query_twitch_api(&url)
 }
 
 pub async fn check_stream(username: &str) -> String {
     let user_id: u32 = id_from_username(username);
     let url = format!("https://api.twitch.tv/kraken/streams/{}", user_id);
-    let live = query_twitch_api(&url);
 
-    live
+    query_twitch_api(&url)
 }
