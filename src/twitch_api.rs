@@ -14,10 +14,7 @@ impl Handler for Collector {
 fn query_twitch_api(url: &str) -> String {
     let mut easy = Easy2::new(Collector(Vec::new()));
     let mut list = List::new();
-    let client_id = format!(
-        "Client-ID: {}",
-        string_field_config("twitch-api-client-id")
-    );
+    let client_id = format!("Client-ID: {}", string_field_config("twitch-api-client-id"));
 
     list.append("Accept: application/vnd.twitchtv.v5+json")
         .unwrap();
@@ -63,7 +60,7 @@ pub fn get_vods(username: &str) -> String {
     videos
 }
 
-pub fn check_stream(username: &str) -> String {
+pub async fn check_stream(username: &str) -> String {
     let user_id: u32 = id_from_username(username);
     let url = format!("https://api.twitch.tv/kraken/streams/{}", user_id);
     let live = query_twitch_api(&url);

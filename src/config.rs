@@ -1,8 +1,8 @@
-use xdg;
 use std::fs::File;
 use std::io::prelude::*;
 use std::vec::Vec;
 use toml::Value;
+use xdg;
 
 fn data_config_file() -> toml::Value {
     let xdg_dirs = xdg::BaseDirectories::with_prefix("mpv_stream").unwrap();
@@ -19,14 +19,18 @@ fn data_config_file() -> toml::Value {
 
 pub fn array_field_config(field: &str) -> Vec<toml::Value> {
     let config_file = data_config_file();
-    let field_value = config_file[field].as_array().expect("Get array field failed");
+    let field_value = config_file[field]
+        .as_array()
+        .expect("Get array field failed");
 
     field_value.to_vec()
 }
 
 pub fn string_field_config(field: &str) -> String {
     let config_file = data_config_file();
-    let field_value = config_file[field].as_str().expect("Get string field failed");
+    let field_value = config_file[field]
+        .as_str()
+        .expect("Get string field failed");
 
     field_value.to_string()
 }
