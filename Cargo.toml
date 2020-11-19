@@ -9,7 +9,7 @@ curl = "0.4"
 libmpv = "2.0"
 toml = "0.5"
 xdg = "2.2"
-crossbeam = "0.7.3"
+crossbeam = "0.8"
 futures = "0.3"
 tokio = { version = "0.3", features = ["full"] }
 

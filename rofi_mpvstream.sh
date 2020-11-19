@@ -6,5 +6,5 @@ then
 	coproc streamlink twitch.tv/$streamer best --player mpv 2>&1
 	exit 1;
 else
-	/home/exosta/softwares/mpv_stream/target/debug/mpv_stream rofi
+	/home/exosta/.cargo/bin/mpv_stream rofi
 fi
