@@ -12,11 +12,8 @@ xdg = "2.2"
 crossbeam = "0.8"
 futures = "0.3"
 tokio = { version = "0.3", features = ["full"] }
+cursive = "0.15"
 
-[dependencies.cursive]
-version = "*"
-features = ["termion-backend"]
-
-# workaround because conflict package with curl
+# workaround because conflict package between curl and tokio
 [dependencies.miow]
 socket2 = "0.3.15"
