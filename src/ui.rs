@@ -114,12 +114,12 @@ pub fn construct_ui(siv: &mut Cursive) {
     // Bug with bold :(
     let text_last_streams = TextView::new("mistermv's last streamings")
         .h_align(HAlign::Center)
-        .effect(Effect::Underline)
+        .style(Effect::Underline)
         .with_name("streamer_last");
 
     let text_favorites = TextView::new("Favorites")
         .h_align(HAlign::Center)
-        .effect(Effect::Underline);
+        .style(Effect::Underline);
 
     let mut theme = siv.current_theme().clone();
     theme.palette[PaletteColor::Background] = Color::TerminalDefault;
