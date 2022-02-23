@@ -1,47 +1,43 @@
-extern crate mpv;
-extern crate cursive;
-
-use std::path::Path;
 use cursive::Cursive;
+use libmpv::{events::*, *};
+use std::thread;
 
-pub fn callback_video(_siv: &mut Cursive, url: &str) {
-    launch_video(Path::new(url));
+pub fn callback_video(_siv: &mut Cursive, url: &str) -> Result<()> {
+    launch_video(url)
 }
 
-fn launch_video(video_path: &Path) {
-    let mut mpv_builder = mpv::MpvHandlerBuilder::new().expect("Failed to init MPV builder");
-    if video_path.is_file() || !video_path.is_file() {
-        let video_path = video_path.to_str().expect("Expected a string for Path, got None");
+fn launch_video(video_path: &str) -> Result<()> {
+    let videopath = String::from(video_path);
 
-        // enable On Screen Controller (disabled with libmpv by default)
-        mpv_builder.set_option("osc",true).unwrap();
-        mpv_builder.set_option("save-position-on-quit",true).unwrap();
-        mpv_builder.set_option("watch-later-directory","/home/exosta/.config/mpv/watch_later").unwrap();
-        mpv_builder.set_option("input-default-bindings",true).unwrap();
-        mpv_builder.set_option("input-vo-keyboard",true).unwrap();
+    thread::spawn(move || {
+        let mpv = Mpv::with_initializer(|mpv_initializer| {
+            mpv_initializer.set_property("osc", true)?;
+            mpv_initializer.set_property("save-position-on-quit", true)?;
+            let mpv_xdgdir = xdg::BaseDirectories::with_prefix("mpv").unwrap();
+            let watchlater_dir = mpv_xdgdir.create_config_directory("watch_later").unwrap();
+            let watchlater_dir = watchlater_dir.to_str().unwrap();
+            mpv_initializer.set_property("watch-later-directory", watchlater_dir)?;
+            mpv_initializer.set_property("input-default-bindings", true)?;
+            mpv_initializer.set_property("input-vo-keyboard", true)?;
+            Ok(())
+        })
+        .unwrap();
 
-        let mut mpv = mpv_builder.build().expect("Failed to build MPV handler");
+        mpv.playlist_load_files(&[(&videopath, FileState::AppendPlay, None)])
+            .unwrap();
+        let mut ev_ctx = mpv.create_event_context();
 
-        mpv.command(&["loadfile", video_path as &str])
-           .expect("Error loading file");
+        loop {
+            let ev = ev_ctx.wait_event(0.).unwrap_or(Err(Error::Null));
+            match ev {
+                Ok(Event::EndFile(_r)) => {
+                    break;
+                }
 
-        // loop twice, send parameter as a string
-        mpv.set_property("loop","1").unwrap();
-
-        // set speed to 100%, send parameter as a f64
-        mpv.set_property("speed",1.0).unwrap();
-
-        'main: loop {
-            while let Some(event) = mpv.wait_event(0.0) {
-                // even if you don't do anything with the events, it is still necessary to empty
-                // the event loop
-                match event {
-                    mpv::Event::Shutdown | mpv::Event::Idle => {
-                        break 'main;
-                    }
-                    _ => {}
-                };
+                Ok(_e) => continue,
+                Err(_e) => continue,
             }
         }
-    }
+    });
+    Ok(())
 }
