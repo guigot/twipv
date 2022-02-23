@@ -33,12 +33,12 @@ pub fn construct_select_view(siv: &mut Cursive, last_videos: &str) {
     let val: Value = serde_json::from_str(last_videos).unwrap();
     let mut max_videos = 10;
 
-    if val["videos"].as_array().unwrap().len() < 10 {
-        max_videos = val["videos"].as_array().unwrap().len();
+    if val["data"].as_array().unwrap().len() < 10 {
+        max_videos = val["data"].as_array().unwrap().len();
     }
 
     for _i in 0..max_videos {
-        let mut plain_title: String = val["videos"][_i]["title"].as_str().unwrap().to_string();
+        let mut plain_title: String = val["data"][_i]["title"].as_str().unwrap().to_string();
         let size = 70;
         if plain_title.chars().count() > size {
             plain_title = plain_title.chars().take(size - 3).collect();
@@ -50,12 +50,13 @@ pub fn construct_select_view(siv: &mut Cursive, last_videos: &str) {
 
         let mut line_str = plain_title;
         line_str.push_str("  ");
-        let game = val["videos"][_i]["game"].as_str().unwrap();
-        line_str.push_str(game);
+        // Plus de jeu associée à une vidéo :(
+        // let game = val["data"][_i]["game"].as_str().unwrap();
+        line_str.push_str("temp");
 
         select_view.add_item(
             line_str,
-            val["videos"][_i]["url"].as_str().unwrap().to_string(),
+            val["data"][_i]["url"].as_str().unwrap().to_string(),
         );
     }
 }
@@ -87,24 +88,24 @@ pub fn construct_ui(siv: &mut Cursive) {
     // TODO : Mettre espace pour "enter"
     // TODO : add trait to select_view pour gérer les inputs
     let select_view = OnEventView::new(select_view)
-        .on_event(Event::Char('k'), move |siv| {
+        .on_event(Event::Char('r'), move |siv| {
             siv.call_on_name("select_view", |select_view: &mut SelectView| {
                 select_view.select_up(1);
             });
         })
-        .on_event(Event::Char('j'), move |siv| {
+        .on_event(Event::Char('s'), move |siv| {
             siv.call_on_name("select_view", |select_view: &mut SelectView| {
                 select_view.select_down(1);
             });
         });
 
     let view_streamers = OnEventView::new(view_streamers)
-        .on_event(Event::Char('k'), move |siv| {
+        .on_event(Event::Char('r'), move |siv| {
             siv.call_on_name("view_streamers", |view_streamers: &mut SelectView| {
                 view_streamers.select_up(1);
             });
         })
-        .on_event(Event::Char('j'), move |siv| {
+        .on_event(Event::Char('s'), move |siv| {
             siv.call_on_name("view_streamers", |view_streamers: &mut SelectView| {
                 view_streamers.select_down(1);
             });

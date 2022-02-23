@@ -37,7 +37,7 @@ async fn check_lives(livestream: Livestream) {
             let mut number_lives = 0;
             for livestreamer in &items {
                 let value: Value = serde_json::from_str(&livestreamer).unwrap();
-                if value["stream"] != Value::Null {
+                if value["data"].as_array().unwrap().len() > 0 {
                     number_lives += 1;
                 }
             }
@@ -47,12 +47,12 @@ async fn check_lives(livestream: Livestream) {
             let mut output_string = String::new();
             for livestreamer in &items {
                 let value: Value = serde_json::from_str(&livestreamer).unwrap();
-                if value["stream"] != Value::Null {
+                if value["data"].as_array().unwrap().len() > 0 {
                     let temp_output = format!(
                         "{: <20}{: <50}{: <25}\n",
-                        value["stream"]["channel"]["name"].as_str().unwrap(),
-                        value["stream"]["channel"]["status"].as_str().unwrap(),
-                        value["stream"]["game"].as_str().unwrap()
+                        value["data"][0]["user_login"].as_str().unwrap(),
+                        value["data"][0]["title"].as_str().unwrap(),
+                        value["data"][0]["game_name"].as_str().unwrap(),
                     );
                     output_string += &temp_output;
                 }
