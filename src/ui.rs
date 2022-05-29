@@ -50,7 +50,7 @@ pub fn construct_select_view(siv: &mut Cursive, last_videos: &str) {
 
         let mut line_str = plain_title;
         line_str.push_str("  ");
-        // Plus de jeu associée à une vidéo :(
+        // No more game with a vod :(
         // let game = val["data"][_i]["game"].as_str().unwrap();
         line_str.push_str("temp");
 

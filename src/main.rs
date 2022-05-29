@@ -8,6 +8,8 @@ use cursive::CursiveExt;
 use futures::executor::block_on;
 use serde_json::Value;
 use std::env;
+use std::fs::File;
+use std::io::prelude::*;
 
 enum Livestream {
     Number,
@@ -32,22 +34,18 @@ async fn check_lives(livestream: Livestream) {
         items.push(streamer.await.unwrap());
     }
 
+    let xdg_data_file = xdg::BaseDirectories::with_prefix("mpv_stream")
+        .unwrap()
+        .place_config_file("output")
+        .unwrap();
     match livestream {
         Livestream::Number => {
+            let mut output_string = String::new();
             let mut number_lives = 0;
             for livestreamer in &items {
                 let value: Value = serde_json::from_str(&livestreamer).unwrap();
                 if value["data"].as_array().unwrap().len() > 0 {
                     number_lives += 1;
-                }
-            }
-            println!("{}", number_lives);
-        }
-        Livestream::Rofi => {
-            let mut output_string = String::new();
-            for livestreamer in &items {
-                let value: Value = serde_json::from_str(&livestreamer).unwrap();
-                if value["data"].as_array().unwrap().len() > 0 {
                     let temp_output = format!(
                         "{: <20}{: <50}{: <25}\n",
                         value["data"][0]["user_login"].as_str().unwrap(),
@@ -57,6 +55,15 @@ async fn check_lives(livestream: Livestream) {
                     output_string += &temp_output;
                 }
             }
+            println!("{}", number_lives);
+            let mut file = File::create(xdg_data_file).unwrap();
+            file.write_all(output_string.as_bytes()).unwrap();
+            file.sync_data().unwrap();
+        }
+        Livestream::Rofi => {
+            let mut file = File::open(xdg_data_file).unwrap();
+            let mut output_string = String::new();
+            file.read_to_string(&mut output_string).unwrap();
             println!("{}", output_string);
         }
     }
@@ -74,6 +81,7 @@ async fn main() {
         }
     } else {
         let mut siv: Cursive = Cursive::default();
+
         ui::construct_ui(&mut siv);
         siv.run();
     }
