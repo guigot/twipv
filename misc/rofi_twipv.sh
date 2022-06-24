@@ -6,5 +6,5 @@ then
 	coproc streamlink twitch.tv/$streamer best --player mpv 2>&1
 	exit 1;
 else
-    $HOME/.cargo/bin/mpv_stream rofi
+    $HOME/.cargo/bin/twipv rofi
 fi

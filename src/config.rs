@@ -4,7 +4,7 @@ use std::vec::Vec;
 use toml::Value;
 
 fn data_config_file() -> toml::Value {
-    let xdg_dirs = xdg::BaseDirectories::with_prefix("mpv_stream").unwrap();
+    let xdg_dirs = xdg::BaseDirectories::with_prefix("twipv").unwrap();
     let config_path = xdg_dirs
         .find_config_file("config.toml")
         .expect("Cannot find config file");

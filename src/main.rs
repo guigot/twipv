@@ -34,7 +34,7 @@ async fn check_lives(livestream: Livestream) {
         items.push(streamer.await.unwrap());
     }
 
-    let xdg_data_file = xdg::BaseDirectories::with_prefix("mpv_stream")
+    let xdg_data_file = xdg::BaseDirectories::with_prefix("twipv")
         .unwrap()
         .place_config_file("output")
         .unwrap();
