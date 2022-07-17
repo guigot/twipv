@@ -47,7 +47,7 @@ async fn check_lives(livestream: Livestream) {
                 if value["data"].as_array().unwrap().len() > 0 {
                     number_lives += 1;
                     let temp_output = format!(
-                        "{: <20}{: <50}{: <25}\n",
+                        "{: <15}{: <.45}\t\t{: <20}\n",
                         value["data"][0]["user_login"].as_str().unwrap(),
                         value["data"][0]["title"].as_str().unwrap(),
                         value["data"][0]["game_name"].as_str().unwrap(),

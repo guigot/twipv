@@ -11,13 +11,14 @@ use cursive::views::{
 };
 use cursive::Cursive;
 use serde_json::Value;
+use std::vec::Vec;
 
-pub fn construct_view_streamers(siv: &mut Cursive) {
+pub fn construct_view_streamers(siv: &mut Cursive, favorites_streamers: Vec<toml::Value>) {
     let mut select_view: ViewRef<SelectView> =
         siv.find_name::<SelectView>("view_streamers").unwrap();
     select_view.set_on_submit(submit_streamer);
 
-    let favorites_streamers = array_field_config("favorites");
+    submit_streamer(siv, favorites_streamers[0].as_str().unwrap());
 
     for streamer in favorites_streamers {
         let streamer_ = streamer.as_str().unwrap();
@@ -48,14 +49,8 @@ pub fn construct_select_view(siv: &mut Cursive, last_videos: &str) {
             plain_title.push_str(fill.as_str());
         }
 
-        let mut line_str = plain_title;
-        line_str.push_str("  ");
-        // No more game with a vod :(
-        // let game = val["data"][_i]["game"].as_str().unwrap();
-        line_str.push_str("temp");
-
         select_view.add_item(
-            line_str,
+            plain_title,
             val["data"][_i]["url"].as_str().unwrap().to_string(),
         );
     }
@@ -76,7 +71,6 @@ fn construct_edit_view(siv: &mut Cursive) {
 }
 
 pub fn construct_ui(siv: &mut Cursive) {
-    let last_videos = get_vods("mistermv");
     let view_streamers: NamedView<SelectView> = SelectView::new()
         .h_align(HAlign::Left)
         .with_name("view_streamers");
@@ -113,7 +107,7 @@ pub fn construct_ui(siv: &mut Cursive) {
     let edit_view = EditView::new().with_name("edit_view");
 
     // Bug with bold :(
-    let text_last_streams = TextView::new("mistermv's last streamings")
+    let text_last_streams = TextView::new("")
         .h_align(HAlign::Center)
         .style(Effect::Underline)
         .with_name("streamer_last");
@@ -149,7 +143,9 @@ pub fn construct_ui(siv: &mut Cursive) {
         .title("Last streamings"),
     );
 
-    construct_view_streamers(siv);
+    let favorites_streamers = array_field_config("favorites");
+    let last_videos = get_vods(favorites_streamers[0].as_str().unwrap());
+    construct_view_streamers(siv, favorites_streamers);
     construct_select_view(siv, &last_videos);
     construct_edit_view(siv);
 
