@@ -34,10 +34,6 @@ async fn check_lives(livestream: Livestream) {
         items.push(streamer.await.unwrap());
     }
 
-    let xdg_data_file = xdg::BaseDirectories::with_prefix("twipv")
-        .unwrap()
-        .place_config_file("output")
-        .unwrap();
     match livestream {
         Livestream::Number => {
             let mut output_string = String::new();
@@ -47,7 +43,7 @@ async fn check_lives(livestream: Livestream) {
                 if value["data"].as_array().unwrap().len() > 0 {
                     number_lives += 1;
                     let temp_output = format!(
-                        "{: <15}{: <.45}\t\t{: <20}\n",
+                        "{: <.25}\t{: <.35}\t{: <.20}\n",
                         value["data"][0]["user_login"].as_str().unwrap(),
                         value["data"][0]["title"].as_str().unwrap(),
                         value["data"][0]["game_name"].as_str().unwrap(),
@@ -56,12 +52,12 @@ async fn check_lives(livestream: Livestream) {
                 }
             }
             println!("{}", number_lives);
-            let mut file = File::create(xdg_data_file).unwrap();
+            let mut file = File::create("/tmp/output_twipv").unwrap();
             file.write_all(output_string.as_bytes()).unwrap();
             file.sync_data().unwrap();
         }
         Livestream::Rofi => {
-            let mut file = File::open(xdg_data_file).unwrap();
+            let mut file = File::open("/tmp/output_twipv").unwrap();
             let mut output_string = String::new();
             file.read_to_string(&mut output_string).unwrap();
             println!("{}", output_string);
