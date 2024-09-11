@@ -11,6 +11,7 @@ impl Handler for Collector {
     }
 }
 
+// TODO : check if token is available and replace it if not
 fn query_twitch_api(url: &str) -> String {
     let mut easy = Easy2::new(Collector(Vec::new()));
     let mut list = List::new();

@@ -20,9 +20,13 @@ pub fn construct_view_streamers(siv: &mut Cursive, favorites_streamers: Vec<toml
 
     submit_streamer(siv, favorites_streamers[0].as_str().unwrap());
 
+    let mut sorted_streamers : Vec<String> = Vec::new();
     for streamer in favorites_streamers {
-        let streamer_ = streamer.as_str().unwrap();
-        select_view.add_item(streamer_, streamer_.to_string())
+        sorted_streamers.push(streamer.as_str().unwrap().to_string());
+    }
+    sorted_streamers.sort();
+    for streamer in sorted_streamers.iter() {
+        select_view.add_item(streamer, streamer.to_string())
     }
 }
 
@@ -79,8 +83,6 @@ pub fn construct_ui(siv: &mut Cursive) {
         .h_align(HAlign::Left)
         .with_name("select_view");
 
-    // TODO : Mettre espace pour "enter"
-    // TODO : add trait to select_view pour gérer les inputs
     let select_view = OnEventView::new(select_view)
         .on_event(Event::Char('r'), move |siv| {
             siv.call_on_name("select_view", |select_view: &mut SelectView| {
